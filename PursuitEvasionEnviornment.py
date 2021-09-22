@@ -6,7 +6,7 @@ class Enviornment(gym.env):
     metadata = {'render.modes': ['human']}
 
     def __init__():
-        self Simulator = None
+        self Simulator() = None
 
     def step():
         observation = self(Simulator.step())
