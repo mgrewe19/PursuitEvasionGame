@@ -11,15 +11,37 @@ class Simulator():
         self.N = 0 #Mean motion (need to choose LEO, GEO, MEO, ...)
     def new_IC():
         self.state = np.array([])
-    def propogate_state():
+    def propogate_state(self, x_k):
+        """Integrates the spacecraft dynamics forward by one time step using the RK4 method """
+        #I dont know what x_k is supposed to be
+
         new_state = np.zeros(6,1)
-        k1 = 0 #Runge kutta methods
-        k2 = 0
-        k3 = 0
-        k4 = 0
-        self.state += (1/6)*(k1 + 2 * k2 + 2 * k3 + k4)
-    def equations_of_motion():
-        1+1 #Add in the equations of motions to this part
+        k1 = self.dt*self.equations_of_motion(x_k[0:6])
+        k2 = self.dt*self.equations_of_motion(x_k[0:6] + 0.5*k1[:,0])
+        k3 = self.dt*self.equations_of_motion(x_k[0:6] + 0.5*k2[:,0])
+        k4 = self.dt*self.equations_of_motion(x_k[0:6] + k3[:,0])
+        self.state += x_k[0:6] + (1.0/6.0)*(k1[:,0] + 2*k2[:,0] + 2*k3[:,0] + k4[:,0]) #This might be wrong
+
+        return self.state
+
+    def equations_of_motion(self, x_k):
+        #Im still not sure what x_k is supposed to be doing here
+        """Returns the x_dot vector"""
+        #Initalizes x
+        x_dot = np.zeros((6,1))
+
+        #Velocity
+        x_dot[0, 0] = x_k(3)
+        x_dot[1, 0] = x_k(4)
+        x_dot[2, 0] = x_k(5)
+
+        #Acceleration
+        x_dot[3, 0] = 3*x_k[0]*self.n**2 + 2*x_k[4]*self.n
+        x_dot[4, 0] = -2*x_k[3]*self.n
+        x_dot[5, 0] = -x_k[2]*self.n**2
+
+        return x_dot
+
     def step():
         for i in range(self.StepSize/self.dl):
             self.propogate_state
