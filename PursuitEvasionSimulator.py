@@ -1,5 +1,6 @@
 import gym
 from gym import spaes
+import numpy as np
 
 class Simulator():
     def __init__(IC = None):

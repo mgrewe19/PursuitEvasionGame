@@ -1,5 +1,6 @@
 import gym
 from gym import spaes
+import numpy as np
 
 class Enviornment(gym.env):
     #Custom Enviornment that follows the gym interface
