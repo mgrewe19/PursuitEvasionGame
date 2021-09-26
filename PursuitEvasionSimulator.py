@@ -1,5 +1,5 @@
 import gym
-from gym import spaes
+from gym import spaces
 import numpy as np
 
 class Simulator():
@@ -9,7 +9,7 @@ class Simulator():
         else:
             self.new_IC()
         self.dt = 1
-        self.N = 0 #Mean motion (need to choose LEO, GEO, MEO, ...)
+        self.N = 11.25 #Mean motion at LEO
     def new_IC():
         self.state = np.array([])
     def propogate_state(self, x_k):
@@ -21,7 +21,7 @@ class Simulator():
         k2 = self.dt*self.equations_of_motion(x_k[0:6] + 0.5*k1[:,0])
         k3 = self.dt*self.equations_of_motion(x_k[0:6] + 0.5*k2[:,0])
         k4 = self.dt*self.equations_of_motion(x_k[0:6] + k3[:,0])
-        self.state += x_k[0:6] + (1.0/6.0)*(k1[:,0] + 2*k2[:,0] + 2*k3[:,0] + k4[:,0]) #This might be wrong
+        self.state += x_k[0:6] + (1.0/6.0)*(k1[:,0] + 2*k2[:,0] + 2*k3[:,0] + k4[:,0]) 
 
         return self.state
 
@@ -45,5 +45,5 @@ class Simulator():
         return x_dot
 
     def step():
-        for i in range(self.StepSize/self.dl):
+        for i in range(self.StepSize/self.dt):
             self.propogate_state

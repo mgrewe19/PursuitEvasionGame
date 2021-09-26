@@ -4,7 +4,7 @@ import numpy as np #This is the package for using the array
 import matplotlib.pyplot as plt #This is the package for plotting
 import timeit as timer #This is the package for timing how long the code is runnign
 
-if name == "__main__":
+if name == "__main__": #What are we using this for?
     enviornment = Enviornment.enviornment() #Initalizes the enviornment
     enviornment.reset() #Resets the enviornment
     Steps = 45 #Number of times to run through the enviornment
@@ -19,8 +19,8 @@ if name == "__main__":
 
     end = timer.default_timer() #Gets the end time
 
-    totTime = end - start
-    timeArr = np.arange(0, totTime, Steps)
+    totTime = end - start #Gets the total time that passes
+    timeArr = np.arange(0, totTime, Steps) #Converts the time that passed into an array
 
-    plt.plot(timeArr, histArray)
-    plt.show()
+    plt.plot(timeArr, histArray, marker = 'o') #Plots the time vs history
+    plt.show() #Shows the plot

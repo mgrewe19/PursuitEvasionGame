@@ -1,8 +1,8 @@
 import gym
-from gym import spaes
+from gym import spaces
 import numpy as np
 
-class Enviornment(gym.env):
+class Enviornment(gym.Env):
     #Custom Enviornment that follows the gym interface
     metadata = {'render.modes': ['human']}
 
