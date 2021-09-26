@@ -6,11 +6,10 @@ class Enviornment(gym.env):
     metadata = {'render.modes': ['human']}
 
     def __init__():
-        self Simulator() = None
+        self.Simulator = None
 
     def step():
         observation = self(Simulator.step())
         return observation
     def reset(self, state = None):
-        self.Simulator = Simulator...
-        (IC = IC)
+        self.Simulator = Simulator.Sim(IC = IC)
