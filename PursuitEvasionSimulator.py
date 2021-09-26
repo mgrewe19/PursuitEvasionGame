@@ -26,6 +26,7 @@ class Simulator():
 
     def equations_of_motion(self, x_k):
         #Im still not sure what x_k is supposed to be doing here
+            #Is x_k the equation of state? 1-3 are position, 4-6 are velocity, 7-9 are acceleration
         """Returns the x_dot vector"""
         #Initalizes x
         x_dot = np.zeros((6,1))
