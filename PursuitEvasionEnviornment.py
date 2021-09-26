@@ -9,7 +9,7 @@ class Enviornment(gym.env):
         self.Simulator = None
 
     def step():
-        observation = self(Simulator.step())
+        observation = self.Simulator.step()
         return observation
-    def reset(self, state = None):
+    def reset(self, IC = None):
         self.Simulator = Simulator.Sim(IC = IC)
