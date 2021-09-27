@@ -4,8 +4,10 @@ import numpy as np #This is the package for using the array
 import matplotlib.pyplot as plt #This is the package for plotting
 import timeit as timer #This is the package for timing how long the code is runnign
 
+name = "__main__" #What are we looking at name for?
+
 if name == "__main__": #What are we using this for?
-    enviornment = Enviornment.enviornment() #Initalizes the enviornment
+    enviornment = PursuitEvasionEnviornment.Enviornment() #Initalizes the enviornment
     enviornment.reset() #Resets the enviornment
     Steps = 45 #Number of times to run through the enviornment
 
