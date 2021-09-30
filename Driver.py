@@ -37,6 +37,7 @@ if __name__ == "__main__": #What are we using this for?
 
     ax = plt.axes(projection='3d')
 
-    ax.plot3D(histArray[0,:], histArray[1,:], histArray[2,:]) #Plots the time vs history
-    ax.plot3D(histArray[6,:], histArray[7,:], histArray[8,:])
+    ax.plot3D(histArray[0,:], histArray[1,:], histArray[2,:], color="red", label="Bennu's Orbit")
+    ax.plot3D(histArray[6,:], histArray[7,:], histArray[8,:], color="green", label="Spacecraft around Bennu")
+
     plt.show() #Shows the plot
