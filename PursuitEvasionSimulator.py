@@ -55,7 +55,7 @@ class Simulator():
         x_dot[2] = x_k[5]
 
         #Acceleration
-        r = np.linalg.norm(x_k[0:2])
+        r = np.linalg.norm(x_k[0:3])
         x_dot[3] = -self.mu*x_k[0]/(r**3)
         x_dot[4] = -self.mu*x_k[1]/(r**3)
         x_dot[5] = -self.mu*x_k[2]/(r**3)
@@ -67,7 +67,7 @@ class Simulator():
         x_dot[8] = x_k[11] #Should be x_k[11]
 
         #Acceleration (These equations are not correct yet)
-        Identiy = [[1, 0, 0], [0, 1 , 0], [0, 0 , 1]]
+        Identiy = np.array([[1, 0, 0], [0, 1 , 0], [0, 0 , 1]])
         r2 = np.zeros((3,1))
         for i in range(3):
             r2[i] = x_k[6+i] - x_k[i]
@@ -75,13 +75,22 @@ class Simulator():
             #(Distance from space to Bennu)
         Ra = self.muBennu/Norm2 #This calculates the gravitational potential of the asteroid
         RdotR = (r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2]) #This is the calulation of r2 dot r2
-        unitD = x_k[0:2]/r #This calulates the unit vector of d to the sun
-        RdotD = (r2[0]*unitD[0] + r2[1]*unitD[1] + r2[2]*unitD[2])
+        D = np.array(x_k[0:3]/r) #This calulates the unit vector of d to the sun
+        RdotD = (r2[0]*D[0] + r2[1]*D[1] + r2[2]*D[2])
         Rs = (-self.mu/(2 * r**3)) * (RdotR - 3* (RdotD**2))
 
-        x_dot[9] = -self.muBennu*x_k[6]/(r2**3) #Calculates x 
-        x_dot[10] = -self.muBennu*x_k[7]/(r2**3) #Calculates y
-        x_dot[11] = -self.muBennu*x_k[8]/(r2**3) #Calculates z
+        Calc1 = (3*np.matmul(D, np.matrix.transpose(D))) #First step of calculation
+            #3*D*D^T (3 times vector to the sun times transpose of vector to the sun)
+
+        Calc2 = np.subtract(Calc1, Identiy) #Second step of calculation
+            #Calc1 - I[3x3]
+
+        Calc3 = np.matmul(Calc2, r2) #Does the final inbetween step of multiplying Calc2 by the distance of 
+            #the spacecraft to the asteroid
+
+        x_dot[9] = -self.muBennu*x_k[6]/(r2[0]**3) + (self.mu/r**3)*Calc3[0]#Calculates x 
+        x_dot[10] = -self.muBennu*x_k[7]/(r2[1]**3) + (self.mu/r**3)*Calc3[1]#Calculates y
+        x_dot[11] = -self.muBennu*x_k[8]/(r2[2]**3) + (self.mu/r**3)*Calc3[2]#Calculates z
 
         return x_dot
 
