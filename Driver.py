@@ -15,7 +15,7 @@ if __name__ == "__main__": #What are we using this for?
     r = 1.12639*1.4959787e11
     mu = 1.327124e20 #(m^3/s^2)mu of the sun
     v = m.sqrt(mu/r)
-    inital_conditions = [0, r, 0, -v, 0, 0, 1000, (1000 + r), 1000, (-v -10), 0, 0] #Bennu orbiting around the sun
+    inital_conditions = [0, r, 0, -v, 0, 0, 1000, (1000 + r), 1000, 0, 0, 0] #Bennu orbiting around the sun
         #(0-5 Bennu state vector, 6-11 spacecraft state vectore)
     enviornment.reset(inital_conditions) #Resets the enviornment
     Steps = 45 #Number of times to run through the enviornment
@@ -38,6 +38,8 @@ if __name__ == "__main__": #What are we using this for?
     ax = plt.axes(projection='3d')
 
     ax.plot3D(histArray[0,:], histArray[1,:], histArray[2,:], color="red", label="Bennu's Orbit")
-    ax.plot3D(histArray[6,:], histArray[7,:], histArray[8,:], color="green", label="Spacecraft around Bennu")
+        #Plots the orbit of Bennu about the sun
+    #ax.plot3D(histArray[6,:], histArray[7,:], histArray[8,:], color="green", label="Spacecraft around Bennu")
+        #Plots the orbit of the spacecraft about Bennu
 
     plt.show() #Shows the plot

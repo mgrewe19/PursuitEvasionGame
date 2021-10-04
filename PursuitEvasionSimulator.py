@@ -28,20 +28,21 @@ class Simulator():
         #print(self.state)
         k1 = self.dt*self.equations_of_motion(x_k)
         #print("k1: ", k1)
-        k2 = self.dt*self.equations_of_motion(x_k[0:1] + 0.5*k1[:,0])
+        k2 = self.dt*self.equations_of_motion(x_k + 0.5*k1[:,0])
         #print("k2: ", k2)
-        k3 = self.dt*self.equations_of_motion(x_k[0:1] + 0.5*k2[:,0])
+        k3 = self.dt*self.equations_of_motion(x_k + 0.5*k2[:,0])
         #print("k3: ", k3)
-        k4 = self.dt*self.equations_of_motion(x_k[0:1] + k3[:,0])
+        k4 = self.dt*self.equations_of_motion(x_k + k3[:,0])
         #print("k4: ", k4)
-        self.state += (1.0/12.0)*(k1[:,0] + 2*k2[:,0] + 2*k3[:,0] + k4[:,0]) 
+        self.state += (1.0/6.0)*(k1[:,0] + 2*k2[:,0] + 2*k3[:,0] + k4[:,0]) #Divide by 6 becuase that is 
+            #How many terms you are adding together
 
-        print(self.state)
+        #print(self.state)
         return self.state
 
     def equations_of_motion(self, x_k):
         #Im still not sure what x_k is supposed to be doing here
-            #Is x_k the equation of state? 1-3 are position, 4-6 are velocity, 7-9 are acceleration
+            #Is x_k the equation of state? 1-3 are position, 4-6 are velocity
         """Returns the x_dot vector"""
         #Initalizes x
         x_dot = np.zeros((12,1))
@@ -54,7 +55,7 @@ class Simulator():
         x_dot[2] = x_k[5]
 
         #Acceleration
-        r = np.linalg.norm(x_k[0:3])
+        r = np.linalg.norm(x_k[0:2])
         x_dot[3] = -self.mu*x_k[0]/(r**3)
         x_dot[4] = -self.mu*x_k[1]/(r**3)
         x_dot[5] = -self.mu*x_k[2]/(r**3)
@@ -66,17 +67,26 @@ class Simulator():
         x_dot[8] = x_k[11] #Should be x_k[11]
 
         #Acceleration (These equations are not correct yet)
-        distFromBennu = np.zeros((3,1))
-        distFromBennu = [x_k[6]-x_k[3],x_k[7]-x_k[4],x_k[8]-x_k[5]]
-        r2 = np.linalg.norm(distFromBennu)
-        x_dot[9] = -self.muBennu*x_k[6]/(r2**3)
-        x_dot[10] = -self.muBennu*x_k[7]/(r2**3)
-        x_dot[11] = -self.muBennu*x_k[8]/(r2**3)
+        Identiy = [[1, 0, 0], [0, 1 , 0], [0, 0 , 1]]
+        r2 = np.zeros((3,1))
+        for i in range(3):
+            r2[i] = x_k[6+i] - x_k[i]
+        Norm2 = np.linalg.norm(r2) #Trying to take the norm of the diff of two vectors 
+            #(Distance from space to Bennu)
+        Ra = self.muBennu/Norm2 #This calculates the gravitational potential of the asteroid
+        RdotR = (r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2]) #This is the calulation of r2 dot r2
+        unitD = x_k[0:2]/r #This calulates the unit vector of d to the sun
+        RdotD = (r2[0]*unitD[0] + r2[1]*unitD[1] + r2[2]*unitD[2])
+        Rs = (-self.mu/(2 * r**3)) * (RdotR - 3* (RdotD**2))
+
+        x_dot[9] = -self.muBennu*x_k[6]/(r2**3) #Calculates x 
+        x_dot[10] = -self.muBennu*x_k[7]/(r2**3) #Calculates y
+        x_dot[11] = -self.muBennu*x_k[8]/(r2**3) #Calculates z
 
         return x_dot
 
     def step(self):
-        print(self.state)
+        #print(self.state)
         for i in range(int(self.StepSize/self.dt)):
             self.propogate_state(self.state)
         return self.state
