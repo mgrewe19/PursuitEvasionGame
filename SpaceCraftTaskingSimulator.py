@@ -2,6 +2,7 @@ import gym
 from gym import spaces
 import numpy as np
 import SpaceCraftTaskingEnviornment #Connects the enviornment file (class)
+import math as m
 
 class Simulator():
     def __init__(self, IC = None):
@@ -25,7 +26,10 @@ class Simulator():
         self.areaSC = 0.79 #Area of the spacecrafts surface (m^2)
         self.au = 1.4959787e11 #Value of 1 AU (m)
     def new_IC(self):
-        self.state = np.array([])
+        r = 1.12639*1.4959787e11
+        mu = 1.327124e20 #(m^3/s^2)mu of the sun
+        v = m.sqrt(mu/r)
+        self.state = np.array([0, r, 0, -v, 0, 0, 1000, 1000, 1000, 0, 0, 0])
     def propogate_state(self, x_k):
         """Integrates the spacecraft dynamics forward by one time step using the RK4 method """
         #print(x_k)
@@ -124,9 +128,11 @@ class Simulator():
         else:
             return 0
 
-    def step(self):
+    def step(self, action):
         #print(self.state)
         for i in range(int(self.StepSize/self.dt)):
+            if i == 0:
+                self.state[9:12] += action
             self.propogate_state(self.state)
             self.Current_Reward = self.Current_Reward + self.get_reward()
         return self.state
