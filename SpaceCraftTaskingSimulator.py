@@ -11,6 +11,7 @@ class Simulator():
         else:
             self.new_IC()
         #print(self.state)
+        self.GoalState = [500, 500, 500] #[m] Creates a goal state (location from the center of Bennu)
         self.dt = 10 #Seconds
         #self.N = 0.0011 #Mean motion at ~500 km
         self.mu = 1.327124e20 #(m^3/s^2)mu of the sun
@@ -123,9 +124,19 @@ class Simulator():
 
     def get_reward(self):
         distance_from_center = np.linalg.norm(self.state[6:9])
+        goalAtBennu = self.GoalState + self.state[0:3] 
+            # Gets the location with respect to the sun of the goal location
+        distance_from_goal = np.linalg.norm(self.state[6:9] - goalAtBennu)
         if (distance_from_center <= self.radius_bennu):
+            #If the space craft is within the circumscribed sphere of bennu
             return -10
+            #Return negative reward
+        elif (distance_from_goal <= 100):
+            #If the space creaft is within 100 meters of the goal location with respect to Bennu
+            return 10
+            #Return positive reward
         else:
+            #Otherwise don't return any reward
             return 0
 
     def step(self, action):

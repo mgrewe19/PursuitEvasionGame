@@ -12,9 +12,9 @@ import math as m
 if __name__ == "__main__": #What are we using this for?
 
     #Checking the Enviornemnt
-    env = SpaceCraftTaskingEnviornment.Enviornment()
+    #env = SpaceCraftTaskingEnviornment.Enviornment()
     # It will check your custom environment and output additional warnings if needed
-    check_env(env, warn=True)
+    #check_env(env, warn=True)
 
     enviornment = SpaceCraftTaskingEnviornment.Enviornment() #Initalizes the enviornment
     r = 1.12639*1.4959787e11
