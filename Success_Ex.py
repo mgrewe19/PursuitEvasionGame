@@ -16,21 +16,20 @@ if __name__ == "__main__":
     inital_conditions = np.array([0, r, 0, -v, 0, 0, 1000, 1000, 1000, 0, 0, 0]) #Bennu orbiting around the sun
         #(0-5 Bennu state vector, 6-11 spacecraft state vectore)
     enviornment.reset(inital_conditions) #Resets the enviornment
-    Steps = 1000 #Number of times to run through the enviornment
+    Steps = 5000 #Number of times to run through the enviornment
 
     histArray = np.zeros((12, Steps)) #Preallocates an array to hold the history data
 
     ###################################### This is where Im trying to pass in the action space
-    enviornment.action_space = spaces.Box(0, 10, shape=(3,1),dtype=np.float32)
+    enviornment.action_space = spaces.Box(low=np.array([-0.1,-0.1,0]),high=np.array([0,0,0]),shape=(3,))
 
     ######################################
 
     start = timer.default_timer() #Gets the start time
 
     for i in range(Steps): #For loop to run the enviornment
-        histArray[:,i],_,_,_ = enviornment.step() #Saves the history data from the enviornment
+        histArray[:,i],_,_,_ = enviornment.step(enviornment.action_space) #Saves the history data from the enviornment
         #print(histArray[:,i])
-    #States.enviornment.states.state_history #I don't know what this line is supposed to do
 
     end = timer.default_timer() #Gets the end time
 

@@ -12,8 +12,10 @@ class Enviornment(gym.Env):
         self.observation_space = spaces.Box(-1e16, 1e16, shape=(12, ))
         #self.action_space = spaces.Box(-10, 10, shape=(3,1),dtype=np.float32)
 
-    def step(self, action = 0):
-        observation = self.Simulator.step(action)
+    def step(self, action):
+        takeAction = action.sample()
+        #print(takeAction)
+        observation = self.Simulator.step(takeAction)
         return observation, self.Simulator.get_reward(), False, {}
     def reset(self, IC = None):
         self.Simulator = SpaceCraftTaskingSimulator.Simulator(IC = IC)
