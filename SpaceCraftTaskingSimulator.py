@@ -141,9 +141,16 @@ class Simulator():
 
     def step(self, action):
         #print(self.state)
-        for i in range(int(self.StepSize/self.dt)):
-            if i == 0:
-                self.state[9:12] += action
-            self.propogate_state(self.state)
-            self.Current_Reward = self.Current_Reward + self.get_reward()
-        return self.state
+        if self.Current_Reward == 0:
+            for i in range(int(self.StepSize/self.dt)):
+                if i == 0:
+                    self.state[9:12] += action
+                self.propogate_state(self.state)
+                self.Current_Reward = self.Current_Reward + self.get_reward()
+                if self.Current_Reward < 0 :
+                    print("Spacecraft colided with Bennu")
+                    break
+                elif self.Current_Reward > 0:
+                    print("Spacecraft successfuly reached end state")
+                    break
+            return self.state

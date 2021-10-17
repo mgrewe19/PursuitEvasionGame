@@ -10,7 +10,7 @@ class Enviornment(gym.Env):
     def __init__(self):
         self.Simulator = None
         self.observation_space = spaces.Box(-1e16, 1e16, shape=(12, ))
-        self.action_space = spaces.Box(-10, 10, shape=(3,1))
+        #self.action_space = spaces.Box(-10, 10, shape=(3,1),dtype=np.float32)
 
     def step(self, action = 0):
         observation = self.Simulator.step(action)

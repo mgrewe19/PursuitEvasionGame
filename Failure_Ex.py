@@ -5,17 +5,10 @@ import matplotlib.pyplot as plt #This is the package for plotting
 import timeit as timer #This is the package for timing how long the code is runnign
 from mpl_toolkits import mplot3d
 from stable_baselines3.common.env_checker import check_env
+from gym import spaces
 import math as m
 
-#Add a space craft to the state vector
-
 if __name__ == "__main__":
-
-    #Checking the Enviornemnt
-    #env = SpaceCraftTaskingEnviornment.Enviornment()
-    # It will check your custom environment and output additional warnings if needed
-    #check_env(env, warn=True)
-
     enviornment = SpaceCraftTaskingEnviornment.Enviornment() #Initalizes the enviornment
     r = 1.12639*1.4959787e11
     mu = 1.327124e20 #(m^3/s^2)mu of the sun
@@ -23,9 +16,14 @@ if __name__ == "__main__":
     inital_conditions = np.array([0, r, 0, -v, 0, 0, 1000, 1000, 1000, 0, 0, 0]) #Bennu orbiting around the sun
         #(0-5 Bennu state vector, 6-11 spacecraft state vectore)
     enviornment.reset(inital_conditions) #Resets the enviornment
-    Steps = 500 #Number of times to run through the enviornment
+    Steps = 2000 #Number of times to run through the enviornment
 
     histArray = np.zeros((12, Steps)) #Preallocates an array to hold the history data
+
+    ###################################### This is where Im trying to pass in the action space
+    enviornment.action_space = spaces.Box(8, 10, shape=(3,1),dtype=np.float32)
+
+    ######################################
 
     start = timer.default_timer() #Gets the start time
 
@@ -50,6 +48,8 @@ if __name__ == "__main__":
 
     ax.plot3D(histArray[0,:] - histArray[6,:], histArray[1,:] - histArray[7,:], histArray[2,:] - histArray[8,:], color="green", label="Spacecraft around Bennu")
         #Plots the orbit of the spacecraft about Bennu
+
+    plt.legend()
 
     ax.ticklabel_format(useOffset = False)
     plt.show() #Shows the plot
