@@ -16,21 +16,26 @@ if __name__ == "__main__":
     inital_conditions = np.array([0, r, 0, -v, 0, 0, 1000, 1000, 1000, 0, 0, 0]) #Bennu orbiting around the sun
         #(0-5 Bennu state vector, 6-11 spacecraft state vectore)
     enviornment.reset(inital_conditions) #Resets the enviornment
-    Steps = 5000 #Number of times to run through the enviornment
-
-    histArray = np.zeros((12, Steps)) #Preallocates an array to hold the history data
+    Steps = 500 #Number of times to run through the enviornment
 
     ###################################### This is where Im trying to pass in the action space
-    enviornment.action_space = spaces.Box(low=np.array([-0.1,-0.1,0]),high=np.array([0,0,0]),shape=(3,))
-
+    possible_actions = np.array([[1,0,0], [-1,0,0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1], [0,0,0]])
+    #actionNumbers = np.array([5,5,5,5,5,5,5,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,2,5])
+    actionNumbers = np.array([5,6,5,5,5,5,5,5,4,4,4,4,4,4,4,3,6,3,3,3,3,3,3,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1])
+    temp = len(actionNumbers)
+    actions2take = np.zeros((temp,3))
+    for j, jvec in enumerate(actionNumbers):
+        actions2take[j,:] = possible_actions[jvec]
     ######################################
 
+    histArray = np.zeros((12, len(actionNumbers))) #Preallocates an array to hold the history data
+
     start = timer.default_timer() #Gets the start time
-
-    for i in range(Steps): #For loop to run the enviornment
-        histArray[:,i],_,_,_ = enviornment.step(enviornment.action_space) #Saves the history data from the enviornment
+    #print(actions2take)
+    for i, action in enumerate(actions2take): #For loop to run the enviornment
+        histArray[:,i],_,_,_ = enviornment.step(action) #Saves the history data from the enviornment
         #print(histArray[:,i])
-
+    #print(histArray)
     end = timer.default_timer() #Gets the end time
 
     totTime = end - start #Gets the total time that passes
@@ -48,7 +53,19 @@ if __name__ == "__main__":
     ax.plot3D(histArray[0,:] - histArray[6,:], histArray[1,:] - histArray[7,:], histArray[2,:] - histArray[8,:], color="green", label="Spacecraft around Bennu")
         #Plots the orbit of the spacecraft about Bennu
 
+    #SC= np.array([histArray[0,temp-1] - histArray[6,temp-1], histArray[1,temp-1] - histArray[7,temp-1], histArray[2,temp-1] - histArray[8,temp-1]])
+    #goal = np.array([histArray[0,temp-1] + 500, histArray[1,temp-1] + 500, histArray[2,temp-1] + 500])
+    #print()
+    #print(SC)
+    #print(goal)
+    #temp = np.linalg.norm(np.abs(SC) -np.abs(goal))
+    #print(temp)
+    #print()
+
     plt.legend()
+    ax.set_xlabel("X axis")
+    ax.set_ylabel("Y axis")
+    ax.set_zlabel("Z axis")
 
     ax.ticklabel_format(useOffset = False)
     plt.show() #Shows the plot

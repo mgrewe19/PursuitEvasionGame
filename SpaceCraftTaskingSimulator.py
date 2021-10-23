@@ -124,18 +124,21 @@ class Simulator():
 
     def get_reward(self):
         distance_from_center = np.linalg.norm(self.state[6:9])
-        goalAtBennu = self.GoalState + self.state[0:3] 
+        goalAtBennu = np.array([self.state[0] + 500, self.state[1] + 500, self.state[2] + 500]) 
             # Gets the location with respect to the sun of the goal location
-        distance_from_goal = np.linalg.norm(self.state[6:9] - goalAtBennu)
+        location_SC = np.array([self.state[0]-self.state[6], self.state[1] - self.state[7], self.state[2] - self.state[8]])
+        distance_from_goal = np.linalg.norm(np.abs(goalAtBennu) -np.abs(location_SC))
         if (distance_from_center <= self.radius_bennu):
             #If the space craft is within the circumscribed sphere of bennu
             return -10
             #Return negative reward
         elif (distance_from_goal <= 100):
+            #print(distance_from_goal)
             #If the space creaft is within 100 meters of the goal location with respect to Bennu
             return 10
             #Return positive reward
         else:
+            #print(distance_from_goal)
             #Otherwise don't return any reward
             return 0
 
@@ -144,7 +147,9 @@ class Simulator():
         if self.Current_Reward == 0:
             for i in range(int(self.StepSize/self.dt)):
                 if i == 0:
+                    #print(self.state)
                     self.state[9:12] += action
+                    #print(self.state)
                 self.propogate_state(self.state)
                 self.Current_Reward = self.Current_Reward + self.get_reward()
                 if self.Current_Reward < 0 :
