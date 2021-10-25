@@ -148,7 +148,8 @@ class Simulator():
             for i in range(int(self.StepSize/self.dt)):
                 if i == 0:
                     #print(self.state)
-                    self.state[9:12] += action
+                    if action.shape == (3,):
+                        self.state[9:12] += action
                     #print(self.state)
                 self.propogate_state(self.state)
                 self.Current_Reward = self.Current_Reward + self.get_reward()
