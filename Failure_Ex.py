@@ -21,17 +21,12 @@ if __name__ == "__main__":
     ###################################### This is where Im trying to pass in the action space
     possible_actions = np.array([[1,0,0], [-1,0,0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1], [0,0,0]])
     actionNumbers = np.array([5,6,6,6,5,5,5,5,6,4,4,4,4,4,3,3,3,3,3,6,1,1,2,2,2,2,2,1,1,1,2,2])
-    temp = len(actionNumbers)
-    actions2take = np.zeros((temp,3))
-    for j, jvec in enumerate(actionNumbers):
-        actions2take[j,:] = possible_actions[jvec]
-    ######################################
 
     histArray = np.zeros((12, len(actionNumbers))) #Preallocates an array to hold the history data
 
     start = timer.default_timer() #Gets the start time
     #print(actions2take)
-    for i, action in enumerate(actions2take): #For loop to run the enviornment
+    for i, action in enumerate(actionNumbers): #For loop to run the enviornment
         histArray[:,i],_,_,_ = enviornment.step(action) #Saves the history data from the enviornment
         #print(histArray[:,i])
     #print(histArray)
