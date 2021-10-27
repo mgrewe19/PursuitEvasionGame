@@ -130,33 +130,36 @@ class Simulator():
         distance_from_goal = np.linalg.norm(np.abs(goalAtBennu) -np.abs(location_SC))
         if (distance_from_center <= self.radius_bennu):
             #If the space craft is within the circumscribed sphere of bennu
-            return -10
+            return -10.0 , True
             #Return negative reward
-        elif (distance_from_goal <= 100):
+        elif (distance_from_goal <= 1000):
             #print(distance_from_goal)
             #If the space creaft is within 100 meters of the goal location with respect to Bennu
-            return 10
+            return 10.0 , True
             #Return positive reward
+        elif (distance_from_center >= 50*self.radius_bennu):
+            return -5.0 , True
         else:
             #print(distance_from_goal)
             #Otherwise don't return any reward
-            return 0
+            return 0.0, False
 
     def step(self, action):
         #print(self.state)
-        if self.Current_Reward == 0:
-            for i in range(int(self.StepSize/self.dt)):
-                if i == 0:
-                    #print(self.state)
-                    if action.shape == (3,):
-                        self.state[9:12] += action
-                    #print(self.state)
-                self.propogate_state(self.state)
-                self.Current_Reward = self.Current_Reward + self.get_reward()
-                if self.Current_Reward < 0 :
-                    print("Spacecraft colided with Bennu")
-                    break
-                elif self.Current_Reward > 0:
-                    print("Spacecraft successfuly reached end state")
-                    break
-            return self.state
+        for i in range(int(self.StepSize/self.dt)):
+            if i == 0:
+                self.state[9:12] += action
+                #print(self.state)
+            self.propogate_state(self.state)
+            reward, Done = self.get_reward()
+            self.Current_Reward = self.Current_Reward + reward
+            if self.Current_Reward <= -10.0 :
+                print("Spacecraft colided with Bennu")
+                break
+            elif self.Current_Reward == -5.0 :
+                #print("Spacecraft Went too far away from Bennu")
+                break
+            elif self.Current_Reward >= 0:
+                #print("Spacecraft successfuly reached end state")
+                break
+        return self.state, Done
