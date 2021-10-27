@@ -21,83 +21,57 @@ if __name__ == "__main__":
     inital_conditions = np.array([0, r, 0, -v, 0, 0, 1000, 1000, 1000, 0, 0, 0]) #Bennu orbiting around the sun
         #(0-5 Bennu state vector, 6-11 spacecraft state vectore)
     #enviornment.reset(inital_conditions) #Resets the enviornment
-    Steps = 500 #Number of times to run through the enviornment
+
+    #Checking the Enviornemnt
+    env = SpaceCraftTaskingEnviornment.Enviornment()
+    # It will check your custom environment and output additional warnings if needed
+    check_env(env, warn=True)
 
     ###################################### This is where Im trying to pass in the action space
     possible_actions = np.array([[1,0,0], [-1,0,0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1], [0,0,0]])
     action_space = (possible_actions)
 
-    model = DQN(MlpPolicy, enviornment, verbose=1)
-    model.learn(total_timesteps=10000, log_interval=4)
+    model = DQN(MlpPolicy, enviornment, verbose=1, exploration_initial_eps=0.1)
+    model.learn(total_timesteps=100000, log_interval=4)
     model.save("deepq_SpacecraftOrbit")
+
+    print("Done with Training")
 
     del model # remove to demonstrate saving and loading
 
     model = DQN.load("deepq_SpacecraftOrbit")
 
-    obs = enviornment.reset(inital_conditions) #Resets the enviornment
+    #obs = enviornment.reset(inital_conditions) #Resets the enviornment
 
     ax = plt.axes(projection='3d')
 
     obs = np.zeros((12,5000))
+    obs[:,0] = enviornment.reset(inital_conditions) #Resets the enviornment
     i=0
 
     while i < 5000:
-        action, _states = model.predict(obs)#, deterministic=True)
-        #A2Take = possible_actions[action]
+        action, _states = model.predict(obs[:,i])#, deterministic=True)
+        #print(action)
         obs[:,i], reward, done, info = enviornment.step(action)
         i += 1
 
-        print(reward)
-        #if done:
-            #obs = enviornment.reset(inital_conditions)
+        #print(reward)
+        if done:
+            tempEnd = i
+            break   
 
     ######################################
 
-    print("done")
-
-    ax.plot3D(obs[0,:], obs[1,:], obs[2,:], color="red", label="Bennu's Orbit")
-    ax.plot3D(obs[0,:] + 500, obs[1,:] + 500, obs[2,:] + 500, color="blue", label="Goal State")
-    ax.plot3D(obs[0,:] - obs[6,:], obs[1,:] - obs[7,:], obs[2,:] - obs[8,:], color="green", label="Spacecraft around Bennu")
-
-    histArray = np.zeros((12, len(actionNumbers))) #Preallocates an array to hold the history data
-
-    start = timer.default_timer() #Gets the start time
-    #print(actions2take)
-    for i, action in enumerate(actions2take): #For loop to run the enviornment
-        histArray[:,i],_,_,_ = enviornment.step(action) #Saves the history data from the enviornment
-        #print(histArray[:,i])
-    #print(histArray)
-    end = timer.default_timer() #Gets the end time
-
-    totTime = end - start #Gets the total time that passes
-    timeArr = np.linspace(0, totTime, Steps) #Converts the time that passed into an array
-    #print(histArray)
-
     ax = plt.axes(projection='3d')
+    ax.plot3D(obs[0,0:tempEnd], obs[1,0:tempEnd], obs[2,0:tempEnd], color="red", label="Bennu's Orbit")
+    ax.plot3D(obs[0,0:tempEnd] + 500, obs[1,0:tempEnd] + 500, obs[2,0:tempEnd] + 500, color="blue", label="Goal State")
+    ax.plot3D(obs[0,0:tempEnd] - obs[6,0:tempEnd], obs[1,0:tempEnd] - obs[7,0:tempEnd], obs[2,0:tempEnd] - obs[8,0:tempEnd], color="green", label="Spacecraft around Bennu")
+    ax.scatter(obs[0,0], obs[1,0], obs[2,0], color="red", label="Bennu's Inital Position")
+    ax.scatter(obs[0,0] + 500, obs[1,0] + 500, obs[2,0] + 500, color="blue", label="Inital Goal State")
+    ax.scatter(obs[0,0] - obs[6,0], obs[1,0] - obs[7,0], obs[2,0] - obs[8,0], color="green", label="Spacecraft Inital Position")
+    #ax.set_xlabel("X location [m]")
+    #ax.set_ylabel("Y location [m]")
+    #ax.set_zlabel("Z location [m]")
+    #ax.legend(loc = "best")
 
-    ax.plot3D(histArray[0,:], histArray[1,:], histArray[2,:], color="red", label="Bennu's Orbit")
-        #Plots the orbit of Bennu about the sun
-
-    ax.plot3D(histArray[0,:] + 500, histArray[1,:] + 500, histArray[2,:] + 500, color="blue", label="Goal State")
-        #Plots the goal states position
-
-    ax.plot3D(histArray[0,:] - histArray[6,:], histArray[1,:] - histArray[7,:], histArray[2,:] - histArray[8,:], color="green", label="Spacecraft around Bennu")
-        #Plots the orbit of the spacecraft about Bennu
-
-    #SC= np.array([histArray[0,temp-1] - histArray[6,temp-1], histArray[1,temp-1] - histArray[7,temp-1], histArray[2,temp-1] - histArray[8,temp-1]])
-    #goal = np.array([histArray[0,temp-1] + 500, histArray[1,temp-1] + 500, histArray[2,temp-1] + 500])
-    #print()
-    #print(SC)
-    #print(goal)
-    #temp = np.linalg.norm(np.abs(SC) -np.abs(goal))
-    #print(temp)
-    #print()
-
-    plt.legend()
-    ax.set_xlabel("X axis")
-    ax.set_ylabel("Y axis")
-    ax.set_zlabel("Z axis")
-
-    ax.ticklabel_format(useOffset = False)
-    plt.show() #Shows the plot
+    plt.show()
