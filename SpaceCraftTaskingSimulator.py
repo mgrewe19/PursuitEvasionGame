@@ -3,6 +3,7 @@ from gym import spaces
 import numpy as np
 import SpaceCraftTaskingEnviornment #Connects the enviornment file (class)
 import math as m
+import time
 
 class Simulator():
     def __init__(self, IC = None):
@@ -11,7 +12,7 @@ class Simulator():
         else:
             self.new_IC()
         #print(self.state)
-        self.GoalState = [500, 500, 500] #[m] Creates a goal state (location from the center of Bennu)
+        self.GoalState = np.array([500, 500, 500]) #[m] Creates a goal state (location from the center of Bennu)
         self.dt = 10 #Seconds
         #self.N = 0.0011 #Mean motion at ~500 km
         self.mu = 1.327124e20 #(m^3/s^2)mu of the sun
@@ -19,23 +20,29 @@ class Simulator():
         massBennu = 7.329e10 #kg this is the mass of Bennu
         G = 6.67408e-11 #(m^3/(kg*s^2)) Gravitational constant
         self.muBennu = (massBennu * G) #(m^3/s^2) mu of Bennu
-        self.StepSize = 30 #This initalizes the step size. (In seconds)
+        self.StepSize = 10 #This initalizes the step size. (In seconds) (was 30)
         self.Current_Reward = 0 #Initializes the current reward to zero
         self.reflectivity = 0.4 #Sets the value of the reflectivity of the spacecraft
         self.SRP = 4.56e-6 #Sets the SRP of the space craft
         self.massSC = 50 #Mass of the spacecraft (kg)
         self.areaSC = 0.79 #Area of the spacecrafts surface (m^2)
         self.au = 1.4959787e11 #Value of 1 AU (m)
+        self.rCircular = 1.12639*1.4959787e11
+        self.vCircular = m.sqrt(self.mu/self.rCircular)
+        self.rSpaceCraft = m.sqrt(1000**2 + 1000**2 + 1000**2)
+        self.vSpaceCraft = 100
+        self.distGoal = np.linalg.norm(self.GoalState - np.array([1000, 1000, 1000]))
+        self.maxSteps = 200
+        self.currentStep = 0
+        self.distPrior = 0
     def new_IC(self):
-        r = 1.12639*1.4959787e11
-        mu = 1.327124e20 #(m^3/s^2)mu of the sun
-        v = m.sqrt(mu/r)
-        self.state = np.array([0, r, 0, -v, 0, 0, 1000, 1000, 1000, 0, 0, 0])
+        self.state = np.array([0, self.rCircular, 0, -self.vCircular, 0, 0, 1000, 1000, 1000, 0, 0, 0, self.distGoal])
+        print(self.state.shape)
     def propogate_state(self, x_k):
         """Integrates the spacecraft dynamics forward by one time step using the RK4 method """
         #print(x_k)
 
-        new_state = np.zeros((12,1))
+        new_state = np.zeros((13,1))
         
         #print(self.state)
         k1 = self.dt*self.equations_of_motion(x_k)
@@ -49,6 +56,8 @@ class Simulator():
         self.state += (1.0/6.0)*(k1[:,0] + 2*k2[:,0] + 2*k3[:,0] + k4[:,0]) #Divide by 6 becuase that is 
             #How many terms you are adding together
 
+        self.distGoal = np.abs(np.linalg.norm((self.state[0:3] + self.GoalState) - (self.state[0:3] + self.state[6:9])))
+
         #print(self.state)
         return self.state
 
@@ -57,7 +66,7 @@ class Simulator():
             #Is x_k the equation of state? 1-3 are position, 4-6 are velocity
         """Returns the x_dot vector"""
         #Initalizes x
-        x_dot = np.zeros((12,1))
+        x_dot = np.zeros((13,1))
         #print(x_k)
 
     #The following information is for Bennu
@@ -120,46 +129,73 @@ class Simulator():
         x_dot[9:12] = (np.array(x_dot[9:12]).T + np.array(Calc6).T).T 
             #Combines the acceleration from the gravity of bennu and solar radiation
 
+        x_dot[12] = np.linalg.norm(self.GoalState - x_dot[0:3])
+
         return x_dot
 
     def get_reward(self):
+        dist2goal = 200
+
+        #print(self.distGoal)
         distance_from_center = np.linalg.norm(self.state[6:9])
+            #CHECK THIS LINE OF CODE WITH ADAM
+
+
         goalAtBennu = np.array([self.state[0] + 500, self.state[1] + 500, self.state[2] + 500]) 
             # Gets the location with respect to the sun of the goal location
-        location_SC = np.array([self.state[0]-self.state[6], self.state[1] - self.state[7], self.state[2] - self.state[8]])
-        distance_from_goal = np.linalg.norm(np.abs(goalAtBennu) -np.abs(location_SC))
+        location_SC = np.array([self.state[0]+self.state[6], self.state[1] + self.state[7], self.state[2] + self.state[8]])
+        #distance_from_goal = np.abs(np.linalg.norm(goalAtBennu - location_SC))
         if (distance_from_center <= self.radius_bennu):
             #If the space craft is within the circumscribed sphere of bennu
+            #print(distance_from_center)
+            #print(self.Current_Reward)
+            print("Spacecraft colided with Bennu")
+            #time.sleep(1)
             return -10.0 , True
             #Return negative reward
-        elif (distance_from_goal <= 1000):
+        elif (self.distGoal <= dist2goal):
+            print("Spacecraft reached goal")
             #print(distance_from_goal)
+            #time.sleep(0.5)
             #If the space creaft is within 100 meters of the goal location with respect to Bennu
-            return 10.0 , True
+            return 100.0 , True
             #Return positive reward
-        elif (distance_from_center >= 50*self.radius_bennu):
-            return -5.0 , True
+        elif (distance_from_center >= (25*self.radius_bennu)):
+            #print("Spacecraft went too far away")
+            return -500.0 , True
         else:
-            #print(distance_from_goal)
-            #Otherwise don't return any reward
-            return 0.0, False
+            #Otherwise return a reqard that is equal to 1 divided by the distance from the goal
+            #return (-1 + (dist2goal/self.distGoal))/100, False
+            #return -1, False
+            if (self.distPrior > self.distGoal):
+                #print(self.distPrior - self.distGoal)
+                return (self.distPrior - self.distGoal)/10, False
+                #return -self.distGoal/100000, False
+            else:
+                return -self.distGoal/1000, False
+            #return dist2goal/self.distGoal, False
 
     def step(self, action):
-        #print(self.state)
+        self.currentStep +=1
+        if self.currentStep >= self.maxSteps:
+            Done = 1
+        else: 
+            Done = 0
         for i in range(int(self.StepSize/self.dt)):
-            if i == 0:
-                self.state[9:12] += action
-                #print(self.state)
-            self.propogate_state(self.state)
-            reward, Done = self.get_reward()
-            self.Current_Reward = self.Current_Reward + reward
-            if self.Current_Reward <= -10.0 :
-                print("Spacecraft colided with Bennu")
-                break
-            elif self.Current_Reward == -5.0 :
-                #print("Spacecraft Went too far away from Bennu")
-                break
-            elif self.Current_Reward >= 0:
-                #print("Spacecraft successfuly reached end state")
-                break
-        return self.state, Done
+            if not Done:
+                self.distPrior = self.distGoal
+                if (i == 0):
+                    self.state[9:12] += action
+                self.propogate_state(self.state)
+                reward, Done = self.get_reward()
+                self.Current_Reward = reward
+        return self.get_obs(), Done
+
+    def get_obs(self):
+        obs = np.zeros(13)
+        obs[0:3] = self.state[0:3]/self.rCircular
+        obs[3:6] = self.state[3:6]/self.vCircular
+        obs[6:9] = self.state[6:9]/self.rSpaceCraft
+        obs[9:12] = self.state[9:12]/self.vSpaceCraft
+        obs[12] = self.state[12]/self.distGoal
+        return obs

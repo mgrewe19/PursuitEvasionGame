@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
     histArray = np.zeros((12, len(actionNumbers))) #Preallocates an array to hold the history data
 
+    print(len(actionNumbers))
     start = timer.default_timer() #Gets the start time
     #print(actions2take)
     for i, action in enumerate(actionNumbers): #For loop to run the enviornment
